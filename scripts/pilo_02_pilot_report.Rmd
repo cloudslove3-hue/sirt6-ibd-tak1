@@ -1,0 +1,156 @@
+---
+title: "SIRT6 1차 시범 분석 보고서 — GSE193677"
+subtitle: "장+췌장 1차 논문 파이프라인 — Pilot Phase"
+author: "Pilot analysis auto-generated"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    theme: flatly
+    df_print: kable
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+.libPaths(c("C:/Rlibs", .libPaths()))
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
+                      fig.align = "center", dpi = 120)
+library(dplyr); library(knitr); library(ggplot2); library(DT)
+s <- readRDS("rds/pilot_summary.rds")
+```
+
+# 1. 시범 분석 개요
+
+- **데이터셋**: `r s$geo_id` (Mount Sinai IBD cohort, Argmann et al.)
+- **분석 일자**: `r s$date`
+- **QC 통과 샘플 수**: `r s$n_samples_qc`
+- **분석 방법**: DESeq2 vst → Spearman 상관(SIRT6 anchor) → WGCNA(signed, blockwise) → GO/KEGG/Reactome enrichment
+- **사전 등록 go/no-go 기준**: `go_nogo_decision_framework.md` 참조
+
+## Subgroup 샘플 수
+
+```{r}
+data.frame(Subgroup = names(s$subgroup_n), n = s$subgroup_n) %>% kable()
+```
+
+# 2. SIRT6 anchor 상관관계 결과
+
+## 2-1. Subgroup × target gene heatmap (ρ)
+
+![](figures/02_sirt6_correlation_heatmap.png)
+
+## 2-2. UC_inflamed scatter plot (7 target genes)
+
+![](figures/03_sirt6_scatter_UC_inflamed.png)
+
+## 2-3. 전체 결과 표 (Spearman ρ, BH-q)
+
+```{r}
+DT::datatable(s$cor_results,
+              options = list(pageLength = 20, scrollX = TRUE),
+              filter = "top") %>%
+  DT::formatRound(c("rho", "p", "q"), 4)
+```
+
+**핵심 해석 포인트:**
+- 사전 가설은 SIRT6와 NLRP3/CASP1/IL1B/PYCARD가 **음의 상관**(SIRT6 억제 → 염증 활성), FOXC1과는 **양의 상관**(Remdesivir 연구 근거).
+- UC_inflamed에서 신호가 가장 강할 것으로 예상되며, 비염증 조직 및 Control에서는 신호가 약해야 specificity 입증.
+
+# 3. WGCNA — SIRT6 module 분석
+
+- **선택된 soft-thresholding power**: `r s$decision_inputs$wgcna_signal`
+- **SIRT6가 속한 module**: `r s$sirt6_module$color` (size: `r s$sirt6_module$size` genes)
+
+## 3-1. Scale-free fit & connectivity
+
+![](figures/04_wgcna_sft.png)
+
+## 3-2. SIRT6 module hub gene (top 30, |kME| 기준)
+
+```{r}
+DT::datatable(s$hub_top30,
+              options = list(pageLength = 30)) %>%
+  DT::formatRound("kME", 3)
+```
+
+# 4. Pathway Enrichment (SIRT6 module)
+
+## 4-1. GO Biological Process (top 10)
+
+![](figures/05_GO_BP_top10.png)
+
+```{r}
+s$go_bp_top %>%
+  select(Description, GeneRatio, pvalue, p.adjust, Count) %>%
+  kable()
+```
+
+## 4-2. KEGG (top 10)
+
+![](figures/06_KEGG_top10.png)
+
+```{r}
+s$kegg_top %>%
+  select(Description, GeneRatio, pvalue, p.adjust, Count) %>%
+  kable()
+```
+
+## 4-3. Reactome (top 10)
+
+```{r}
+s$reactome_top %>%
+  select(Description, GeneRatio, pvalue, p.adjust, Count) %>%
+  kable()
+```
+
+# 5. Go/No-go 의사결정
+
+## 사전 정의된 기준 (decision rule)
+
+| 기준 | Threshold |
+|------|-----------|
+| Strong correlation | \|ρ\| ≥ 0.25 & q < 0.05 (UC_inflamed) |
+| GO 조건 | strong correlation ≥ 3개 AND WGCNA module이 inflammation/immune pathway enriched |
+| NO-GO 조건 | 어떤 subgroup에서도 modest(\|ρ\|≥0.15) 없음 AND WGCNA 신호 없음 |
+| 그 외 | CAUTION → 코호트 추가 또는 설계 재평가 |
+
+## 시범 분석 결과 입력
+
+- UC_inflamed strong correlation 개수: **`r s$decision_inputs$n_strong_UC_inflamed` / 7**
+- 어느 subgroup이든 modest correlation 개수: **`r s$decision_inputs$n_modest_any`**
+- WGCNA SIRT6 module의 inflammation pathway 신호: **`r s$decision_inputs$wgcna_signal`**
+
+## 자동 판정
+
+# **DECISION: `r s$decision`**
+
+# 6. 후속 단계 권고
+
+## "GO"일 경우
+1. **다음 코호트 합치기**: GSE99816(CD ileum), GSE194331(AP) — `ComBat_seq()`로 batch correction
+2. **scRNA 검증**: Smillie 2019 (UC, GSE116222) + Tang 2024 (AP, GSE197850 추정) → SIRT6+ 세포 분획
+3. **Drug repositioning quant**: LINCS L1000 query로 SIRT6 module reverse signature
+4. **Manuscript draft 시작**: 타깃 저널 CMGH, J Crohns Colitis, Pancreatology
+
+## "CAUTION"일 경우
+1. **메타데이터 재확인**: location/inflammation 매핑 오류 가능성 점검
+2. **추가 normalization**: covariate 모델에 age, sex, batch 추가 후 재실행
+3. **다른 코호트로 1차 검증**: GSE99816(CD) 단독 분석 → cross-validation
+
+## "NO-GO"일 경우
+1. **가설 자체 재검토**: SIRT6 발현이 bulk RNA에서 약하면 cell-type별 활성도가 핵심일 수 있음 → scRNA로 우회
+2. **다른 sirtuin 검토**: SIRT1(간), SIRT3(미토콘드리아 염증)이 GI에서 dominant할 가능성
+3. **Tissue 외 sample**: PBMC, serum 기반 cohort로 axis 재정의
+
+# 7. 한계 및 caveat
+
+- **단일 코호트** — Mount Sinai cohort의 patient population, biopsy protocol에 특화됨. 외부 validation 필수.
+- **Bulk RNA** — cell-type-level 신호는 평균에 묻힘. scRNA로 보강 필요.
+- **Spearman은 monotonic 가정** — 비선형 관계는 놓침. Mutual information 추가 검토 가능.
+- **WGCNA module color는 stochastic** — 재실행 시 색상명만 바뀔 수 있으나 module composition은 동일.
+
+---
+
+*이 보고서는 `01_pilot_GSE193677.R` 실행 후 `rds/pilot_summary.rds`로부터 자동 생성됨.*
