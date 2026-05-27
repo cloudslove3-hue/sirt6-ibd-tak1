@@ -1,0 +1,3 @@
+"cell_type","spearman_r","pearson_r","threshold_0.7_met","n_samples"
+"Epithelial",0.952447863164458,0.887643096668045,TRUE,2483
+"Immune",0.932767700564079,0.898028653813418,TRUE,2483
