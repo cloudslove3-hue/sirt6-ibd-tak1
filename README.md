@@ -1,3 +1,19 @@
+> ## SUPERSEDED — DO NOT REUSE
+>
+> The analysis in this release was **withdrawn**. Errors were identified in dataset
+> attribution, condition mapping, integer coercion, biological-unit assignment, and
+> anatomical matching. Most consequentially, GSE116222 — the Parikh colonic
+> *epithelial-isolation* experiment, not a multi-lineage atlas — was used as a
+> multi-lineage deconvolution reference, and repeated biopsies from the same
+> participant were analysed as independent observations.
+>
+> **The descriptions below are preserved exactly as they stood and contain those
+> errors.** They are retained so that the corrections can be verified independently.
+>
+> The corrected analysis is release **`v2.0.0`**. A dated correction and deviation
+> record accompanies the corrected manuscript as Additional file 2.
+
+---
 # SIRT6 — Epithelial-enriched inhibitor of the IBD inflammasome axis
 
 Code, results, and figures for the manuscript:
