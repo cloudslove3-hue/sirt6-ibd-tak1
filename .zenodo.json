@@ -1,0 +1,35 @@
+{
+  "upload_type": "software",
+  "title": "sirt6-ibd-tak1: superseded analysis code for the SIRT6-inflammasome study (v1.0.0, archived for the record)",
+  "version": "1.0.0-superseded",
+  "language": "eng",
+  "license": "mit",
+  "access_right": "open",
+  "description": "<p><strong>This release is archived for the historical record and must not be reused. Its results were withdrawn.</strong></p><p>Analysis code, result tables, and figures for an earlier version of a study of SIRT6 and inflammasome-related transcripts in inflammatory bowel disease mucosa. Errors were subsequently identified in dataset attribution, condition mapping, integer coercion, biological-unit assignment, and anatomical matching. Most consequentially, GSE116222 (an epithelial-isolation dataset) was used as a multi-lineage deconvolution reference, and repeated biopsies from the same participant were analysed as independent observations.</p><p>The corrected analysis is released separately in this same Zenodo concept record. Cite the corrective release, not this one, unless you are specifically referring to the superseded work.</p><p>Funding: Bio&amp;Medical Technology Development Program of the National Research Foundation of Korea, funded by the Ministry of Science and ICT, grant RS-2023-00223501.</p>",
+  "creators": [
+    {
+      "name": "Gong, Eun Jeong",
+      "affiliation": "Hallym University College of Medicine, Chuncheon, Korea",
+      "orcid": "0000-0003-3996-3472"
+    },
+    {
+      "name": "Bang, Chang Seok",
+      "affiliation": "Hallym University College of Medicine, Chuncheon, Korea",
+      "orcid": "0000-0003-4908-5431"
+    },
+    {
+      "name": "Lee, Jae Jun",
+      "affiliation": "Hallym University College of Medicine, Chuncheon, Korea",
+      "orcid": "0000-0002-5418-500X"
+    }
+  ],
+  "keywords": [
+    "SIRT6",
+    "inflammatory bowel disease",
+    "transcriptomics",
+    "cell-type deconvolution",
+    "superseded",
+    "reproducibility"
+  ],
+  "notes": "Superseded. Retained only so that the record of the corrected analysis is verifiable."
+}
